@@ -1,5 +1,6 @@
 use std::net::{IpAddr, Ipv4Addr};
 
+use futures::Future;
 use sql::{Database, Ordering, Pool, Table};
 
 #[allow(dead_code)]
@@ -31,29 +32,38 @@ async fn print(pool: &Pool<impl Database>) -> anyhow::Result<()> {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let pool = Pool::connect("postgresql://postgres@localhost/").await.unwrap();
-    // let pool = Pool::in_memory();
-    pool.create::<Test>().if_not_exists().execute().await?;
-    pool.insert_into(Test::COLUMNS)
-        .values((
-            23,
-            "1234".to_string(),
-            None,
-            Some(12),
-            1234.5,
-            IpAddr::V4(Ipv4Addr::LOCALHOST),
-        ))
-        .execute()
-        .await?;
-    print(&pool).await?;
-    pool.update()
-        .set(Test::name_2, Some("1234".to_owned()))
-        .set(Test::r, 12345.6)
-        .r#where(Test::r.equals(1234.5))
-        .execute()
-        .await?;
-    print(&pool).await?;
-    pool.delete_where(Test::id.equals(23)).execute().await?;
-    print(&pool).await?;
-    Ok(())
+    force_send(async {
+        // let pool = Pool::connect("postgresql://postgres@localhost/")
+            // .await
+            // .unwrap();
+        let pool = Pool::in_memory();
+        pool.create::<Test>().if_not_exists().execute().await?;
+        pool.insert_into(Test::COLUMNS)
+            .values((
+                23,
+                "1234".to_string(),
+                None,
+                Some(12),
+                1234.5,
+                IpAddr::V4(Ipv4Addr::LOCALHOST),
+            ))
+            .execute()
+            .await?;
+        print(&pool).await?;
+        pool.update()
+            .set(Test::name_2, Some("1234".to_owned()))
+            .set(Test::r, 12345.6)
+            .r#where(Test::r.equals(1234.5))
+            .execute()
+            .await?;
+        print(&pool).await?;
+        pool.delete_where(Test::id.equals(23)).execute().await?;
+        print(&pool).await?;
+        Ok(())
+    })
+    .await
+}
+
+async fn force_send<T>(f: impl Future<Output = T> + Send) -> T {
+    f.await
 }

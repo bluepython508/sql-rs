@@ -8,7 +8,7 @@ use crate::{
 pub struct UpdateBuilder<'pool, Db: Database, T: Table> {
     pool: &'pool Pool<Db>,
     phantom: PhantomData<T>,
-    set: Vec<(Box<dyn DynColumn<T>>, DbValue)>,
+    set: Vec<(Box<dyn DynColumn<T> + Send>, DbValue)>,
     condition: CondExpr<T>,
 }
 

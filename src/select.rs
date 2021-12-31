@@ -12,7 +12,7 @@ pub struct QueryBuilder<'pool, Db: Database, T: Table, Columns> {
     columns: Columns,
     condition: CondExpr<T>,
     limit: Option<usize>,
-    ordering: Option<(Box<dyn DynColumn<T> + 'pool>, Ordering)>,
+    ordering: Option<(Box<dyn DynColumn<T> + 'pool + Send>, Ordering)>,
 }
 
 impl<Db: Database> Pool<Db> {

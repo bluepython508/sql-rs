@@ -2,9 +2,9 @@ use crate::{Column, DbColumnType, DbValue, DynColumn, Table};
 
 pub struct CondExpr<T: Table>(pub(crate) CondExprE<T>);
 pub(crate) enum CondExprE<T: Table> {
-    ColumnEquals(Box<dyn DynColumn<T>>, DbValue),
-    ColumnIsNotNull(Box<dyn DynColumn<T>>),
-    ColumnIsNull(Box<dyn DynColumn<T>>),
+    ColumnEquals(Box<dyn DynColumn<T> + Send>, DbValue),
+    ColumnIsNotNull(Box<dyn DynColumn<T> + Send>),
+    ColumnIsNull(Box<dyn DynColumn<T> + Send>),
     All(Vec<CondExprE<T>>),
     Any(Vec<CondExprE<T>>),
     True,
