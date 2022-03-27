@@ -33,40 +33,31 @@ impl DbTypeE {
         }
     }
 }
-
-impl DbColumnType for i32 {
-    fn from_db(db_value: &DbValue) -> Result<Self> {
-        match db_value.0 {
-            Value::Integer(i) => Ok(i as _),
-            _ => bail!("Expected integer, found {:?}", db_value.0),
-        }
-    }
-
-    fn to_db(&self) -> DbValue {
-        DbValue(Value::Integer(*self as _))
-    }
-
-    fn db_type() -> DbType {
-        DbType(DbTypeE::Integer)
-    }
-}
-
-impl DbColumnType for i64 {
-    fn from_db(db_value: &DbValue) -> Result<Self> {
-        match db_value.0 {
-            Value::Integer(i) => Ok(i),
-            _ => bail!("Expected integer, found {:?}", db_value.0),
-        }
-    }
-
-    fn to_db(&self) -> DbValue {
-        DbValue(Value::Integer(*self as _))
-    }
-
-    fn db_type() -> DbType {
-        DbType(DbTypeE::Integer)
+macro_rules! int_db_column_type {
+    ($($t:ty)*) => {
+        $(
+            impl DbColumnType for $t {
+                fn from_db(db_value: &DbValue) -> Result<Self> {
+                    match db_value.0 {
+                        Value::Integer(i) => Ok(<$t>::try_from(i)?),
+                        _ => bail!("Expected integer, found {:?}", db_value.0),
+                    }
+                }
+            
+                fn to_db(&self) -> DbValue {
+                    DbValue(Value::Integer((*self).into()))
+                }
+            
+                fn db_type() -> DbType {
+                    DbType(DbTypeE::Integer)
+                }
+            }
+            
+        )*
     }
 }
+
+int_db_column_type!(u8 i8 u16 i16 u32 i32 i64);
 
 impl DbColumnType for f32 {
     fn from_db(db_value: &DbValue) -> Result<Self> {
