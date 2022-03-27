@@ -1,4 +1,3 @@
-#![feature(const_fn_trait_bound, const_fn_fn_ptr_basics)]
 use std::marker::PhantomData;
 
 pub use anyhow::Result;
