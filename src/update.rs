@@ -66,6 +66,7 @@ impl<Db: Database, T: Table> UpdateBuilder<'_, Db, T> {
     }
 
     pub async fn execute(self) -> Result<()> {
+        if self.set.len() == 0 { return Ok(()) }
         let pool = self.pool;
         let (query, params) = self.build_query();
         Db::execute(&pool.0, query, params).await
